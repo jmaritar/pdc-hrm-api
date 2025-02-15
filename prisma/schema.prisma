@@ -1,0 +1,203 @@
+// This is your Prisma schema file
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabla de usuarios
+model User {
+  id_user         String @id @default(uuid())
+  email           String @unique @db.VarChar(255)
+  password        String @db.VarChar(255)
+  name            String @db.VarChar(100)
+  role            UserRole
+
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime? @updatedAt
+  created_by      String? @db.VarChar(36)
+  updated_by      String? @db.VarChar(36)
+
+  sessions        Session[]
+  logs            Log[] @relation("UserLogs")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  HR
+}
+
+// Tabla de empresas
+model Company {
+  id_company      String @id @default(uuid())
+  legal_name      String @db.VarChar(255) // Razón social
+  trade_name      String @db.VarChar(255) // Nombre comercial
+  nit             String @unique @db.VarChar(50)
+  phone           String? @db.VarChar(20)
+  email           String? @db.VarChar(255)
+  address         String? @db.VarChar(255)
+  company_type_id String? @db.VarChar(36)
+  country_id      String @db.VarChar(36)
+  department_id   String @db.VarChar(36)
+  municipality_id String @db.VarChar(36)
+
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime? @updatedAt
+  created_by      String? @db.VarChar(36)
+  updated_by      String? @db.VarChar(36)
+
+  country         Country      @relation(fields: [country_id], references: [id_country])
+  department      Department   @relation(fields: [department_id], references: [id_department])
+  municipality    Municipality @relation(fields: [municipality_id], references: [id_municipality])
+  company_type    CompanyType? @relation(fields: [company_type_id], references: [id_company_type])
+  collaborators       CollaboratorCompany[]
+  logs            Log[] @relation("CompanyLogs")
+
+}
+
+// Tipos de empresas
+model CompanyType {
+  id_company_type String @id @default(uuid())
+  name            String @unique @db.VarChar(100)
+  companies       Company[]
+}
+
+// Tabla de colaboradores
+model Collaborator {
+  id_collaborator    String @id @default(uuid())
+  name           String @db.VarChar(255)
+  age            Int
+  phone          String? @db.VarChar(20)
+  email          String? @db.VarChar(255)
+  address        String? @db.VarChar(255)
+  salary         Float?
+  start_date     DateTime?
+  end_date       DateTime?
+  position       String? @db.VarChar(100)
+
+  is_active      Boolean @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime? @updatedAt
+  created_by     String? @db.VarChar(36)
+  updated_by     String? @db.VarChar(36)
+
+  companies      CollaboratorCompany[] // Relación muchos a muchos
+  logs           Log[] @relation("CollaboratorLogs")
+}
+
+// Relación muchos a muchos entre Collaborator y Company
+model CollaboratorCompany {
+  id_collaborator_company String @id @default(uuid())
+  collaborator_id         String @db.VarChar(36)
+  company_id          String @db.VarChar(36)
+  start_date          DateTime @default(now())
+  end_date            DateTime?
+
+  collaborator            Collaborator @relation(fields: [collaborator_id], references: [id_collaborator])
+  company             Company  @relation(fields: [company_id], references: [id_company])
+
+  @@unique([collaborator_id, company_id]) // Evitar duplicaciones
+}
+
+// Geografía
+model Country {
+  id_country     String @id @default(uuid())
+  name           String @unique @db.VarChar(100)
+  code           String? @unique @db.VarChar(10)
+  phone_code     String? @db.VarChar(10)
+  currency_code  String? @db.VarChar(10)
+  currency_name  String? @db.VarChar(50)
+  currency_symbol String? @db.VarChar(10)
+  flag           String? @db.VarChar(255)
+  language       String? @db.VarChar(50)
+  capital        String? @db.VarChar(100)
+
+  is_active      Boolean @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime? @updatedAt
+  created_by     String? @db.VarChar(36)
+  updated_by     String? @db.VarChar(36)
+
+  companies      Company[]
+  departments    Department[]
+}
+
+model Department {
+  id_department  String @id @default(uuid())
+  name           String @db.VarChar(100)
+  country_id     String @db.VarChar(36)
+
+  is_active      Boolean @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime? @updatedAt
+  created_by     String? @db.VarChar(36)
+  updated_by     String? @db.VarChar(36)
+
+  country        Country  @relation(fields: [country_id], references: [id_country])
+
+  companies      Company[]
+  municipalities Municipality[]
+}
+
+model Municipality {
+  id_municipality String @id @default(uuid())
+  name            String @db.VarChar(100)
+  department_id   String @db.VarChar(36)
+
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime? @updatedAt
+  created_by      String? @db.VarChar(36)
+  updated_by      String? @db.VarChar(36)
+
+  department      Department @relation(fields: [department_id], references: [id_department])
+
+  companies       Company[]
+}
+
+// Autenticación y sesiones
+model Session {
+  id_session    String @id @default(uuid())
+  user_id       String @db.VarChar(36)
+  token         String @unique @db.VarChar(255)
+  refresh_token String @unique @db.VarChar(255)
+  expires_at    DateTime
+  created_at    DateTime @default(now())
+
+  user          User @relation(fields: [user_id], references: [id_user])
+}
+
+// Tabla de auditoría
+model Log {
+  id_log       String    @id @default(uuid())
+  user_id      String?   @db.VarChar(36)
+  table_name   String    @db.VarChar(100)
+  action       LogAction
+  record_id    String    @db.VarChar(36)
+  before_data  Json?
+  after_data   Json?
+  ip_address   String? @db.VarChar(50)
+  device_info  String? @db.VarChar(255)
+  reason       String? @db.VarChar(255)
+  created_at   DateTime  @default(now())
+
+  user         User[] @relation("UserLogs")
+  companies    Company[] @relation("CompanyLogs")
+  collaborators    Collaborator[] @relation("CollaboratorLogs")
+}
+
+
+enum LogAction {
+  CREATE
+  UPDATE
+  DELETE
+  DEACTIVATE
+}

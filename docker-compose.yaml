@@ -1,0 +1,6 @@
+name: pdc-hrm-api
+
+services:
+  app:
+    env_file:
+      - .env

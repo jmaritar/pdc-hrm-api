@@ -14,5 +14,6 @@
   "eslint.workingDirectories": [{ "mode": "auto" }] /* For Monorepo */,
 
   /* Others */
-  "cSpell.language": "en,en-US,en-GB"
+  "cSpell.language": "en,en-US,en-GB,es,es-ES",
+  "material-icon-theme.activeIconPack": "nest"
 }

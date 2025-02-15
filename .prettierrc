@@ -11,6 +11,7 @@
   "importOrder": [
     "^(@nestjs/(.*)$)|^(@nestjs$)",
     "^(nestjs/(.*)$)|^(hono$)",
+    "^(@prisma/(.*)$)|^(@prisma$)",
     "",
     "<THIRD_PARTY_MODULES>",
     "",
