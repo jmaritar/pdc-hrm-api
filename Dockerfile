@@ -13,6 +13,12 @@ RUN npm install
 # Copiar el resto de los archivos de la aplicación
 COPY . .
 
+# Generar el cliente Prisma (asegurándonos de que el archivo prisma/schema.prisma esté disponible)
+RUN npx prisma generate
+
+# Ejecutar las migraciones de Prisma (si es necesario)
+RUN npx prisma migrate deploy
+
 # Compilar la aplicación en el directorio dist
 RUN npm run build
 
@@ -30,6 +36,9 @@ RUN npm install --only=production
 
 # Copiar los archivos compilados desde la etapa de build
 COPY --from=build /app/dist ./dist
+
+# Copiar los archivos Prisma desde la etapa de build
+COPY --from=build /app/prisma ./prisma
 
 # Exponer el puerto en el que la aplicación se ejecutará
 EXPOSE 3000

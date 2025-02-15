@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 
+import { PrismaService } from 'src/prisma/prisma.service';
+
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
 
 @Injectable()
 export class CountriesService {
+  constructor(private prismaService: PrismaService) {}
   create(createCountryDto: CreateCountryDto) {
     return 'This action adds a new country';
   }
 
   findAll() {
-    return `This action returns all countries`;
+    return this.prismaService.country.findMany();
   }
 
   findOne(id: number) {
