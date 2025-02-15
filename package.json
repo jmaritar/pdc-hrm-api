@@ -1,8 +1,8 @@
 {
-  "name": "api-pdc",
+  "name": "pdc-hrm-api",
   "version": "1.0.0",
   "private": true,
-  "description": "Byte Recipes API",
+  "description": "Human Resources Management API for PDC",
   "author": "Mario Arita <marioarita502@gmail.com>",
   "license": "MIT",
   "contributors": [

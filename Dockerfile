@@ -1,14 +1,38 @@
-FROM node:20-alpine
+# Etapa 1: Construcción de la imagen
+FROM node:20 AS build
 
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN apk add --no-cache openssl \
-    && npm ci
+# Copiar los archivos package.json y package-lock.json
+COPY package*.json ./
 
+# Instalar las dependencias de producción y desarrollo
+RUN npm install
+
+# Copiar el resto de los archivos de la aplicación
 COPY . .
 
-RUN npx prisma generate
+# Compilar la aplicación en el directorio dist
 RUN npm run build
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+# Etapa 2: Imagen de producción
+FROM node:20 AS production
+
+# Establecer el directorio de trabajo
+WORKDIR /app
+
+# Copiar solo los archivos necesarios para la producción
+COPY package*.json ./
+
+# Instalar las dependencias de producción
+RUN npm install --only=production
+
+# Copiar los archivos compilados desde la etapa de build
+COPY --from=build /app/dist ./dist
+
+# Exponer el puerto en el que la aplicación se ejecutará
+EXPOSE 3000
+
+# Comando para ejecutar la aplicación
+CMD ["node", "dist/main"]
