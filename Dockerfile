@@ -16,9 +16,6 @@ COPY . .
 # Generar el cliente Prisma (asegurándonos de que el archivo prisma/schema.prisma esté disponible)
 RUN npx prisma generate
 
-# Ejecutar las migraciones de Prisma (si es necesario)
-RUN npx prisma migrate deploy
-
 # Compilar la aplicación en el directorio dist
 RUN npm run build
 
