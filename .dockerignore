@@ -1,12 +1,17 @@
 node_modules/
 dist/
+test/
 coverage/
 databases/
 cli/
 .sst/
 
-*-lock.json
-*.lock
+
+.eslintrc.json
+.gitignore
+.prettierrc
+.prettierignore
+README.md
 
 .env
 .env.*
