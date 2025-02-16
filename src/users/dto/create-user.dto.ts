@@ -4,7 +4,7 @@ import { UserRole } from '@prisma/client';
 import { IsEmail, IsEnum, IsString, Matches, MinLength } from 'class-validator';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'user@example.com', description: 'Correo electrónico único del usuario' })
+  @ApiProperty({ example: 'super@pcd.com', description: 'Correo electrónico único del usuario' })
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
   email: string;
 
