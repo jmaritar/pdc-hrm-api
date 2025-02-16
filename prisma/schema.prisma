@@ -171,23 +171,28 @@ model Session {
   refresh_token String @unique @db.VarChar(255)
   expires_at    DateTime
   created_at    DateTime @default(now())
+  platform      String? @db.VarChar(50) // Web, Android, iOS
+  device_name   String? @db.VarChar(100)
+  device_type   String? @db.VarChar(50)
+  device_os     String? @db.VarChar(50)
+  ip_address    String? @db.VarChar(50)
 
   user          User @relation(fields: [user_id], references: [id_user])
 }
 
 // Tabla de auditoría
 model Log {
-  id_log       String    @id @default(uuid())
-  user_id      String?   @db.VarChar(36)
-  table_name   String    @db.VarChar(100)
+  id_log       String     @id @default(uuid())
+  user_id      String?    @db.VarChar(36)
+  table_name   String     @db.VarChar(100)
   action       LogAction
-  record_id    String    @db.VarChar(36)
-  before_data  Json?
-  after_data   Json?
-  ip_address   String? @db.VarChar(50)
-  device_info  String? @db.VarChar(255)
-  reason       String? @db.VarChar(255)
-  created_at   DateTime  @default(now())
+  record_id    String     @db.VarChar(36)
+  before_data  String?    @db.Text
+  after_data   String?    @db.Text
+  ip_address   String?    @db.VarChar(50)
+  device_info  String?    @db.VarChar(255)
+  reason       String?    @db.VarChar(255)
+  created_at   DateTime   @default(now())
 
   user         User[] @relation("UserLogs")
   companies    Company[] @relation("CompanyLogs")
