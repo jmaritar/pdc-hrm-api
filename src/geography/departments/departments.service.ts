@@ -36,6 +36,37 @@ export class DepartmentsService {
     }
   }
 
+  async findAllByCountry(countryId: string) {
+    const country = await this.prisma.country.findUnique({
+      where: { id_country: countryId, is_active: true },
+    });
+
+    if (!country) {
+      throw new NotFoundException('El país especificado no existe');
+    }
+
+    try {
+      const departments = await this.prisma.department.findMany({
+        where: { country_id: countryId },
+        include: { country: true },
+      });
+
+      if (departments.length === 0) {
+        throw new NotFoundException('No se encontraron departamentos');
+      }
+
+      return {
+        message: 'Lista de departamentos obtenida exitosamente',
+        data: departments,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al obtener los departamentos');
+    }
+  }
+
   async create(data: CreateDepartmentDto) {
     const country = await this.prisma.country.findUnique({
       where: { id_country: data.country_id },

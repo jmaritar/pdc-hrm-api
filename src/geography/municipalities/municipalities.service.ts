@@ -36,6 +36,37 @@ export class MunicipalitiesService {
     }
   }
 
+  async findAllByDepartment(departmentId: string) {
+    const department = await this.prisma.department.findUnique({
+      where: { id_department: departmentId, is_active: true },
+    });
+
+    if (!department) {
+      throw new NotFoundException('El departamento especificado no existe');
+    }
+
+    try {
+      const municipalities = await this.prisma.municipality.findMany({
+        where: { department_id: departmentId },
+        include: { department: true },
+      });
+
+      if (municipalities.length === 0) {
+        throw new NotFoundException('No se encontraron municipios');
+      }
+
+      return {
+        message: 'Lista de municipios obtenida exitosamente',
+        data: municipalities,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al obtener los municipios');
+    }
+  }
+
   async create(data: CreateMunicipalityDto) {
     const existingMunicipality = await this.prisma.municipality.findFirst({
       where: { name: data.name, department_id: data.department_id },

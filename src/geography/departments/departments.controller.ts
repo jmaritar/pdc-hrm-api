@@ -31,6 +31,13 @@ export class DepartmentsController {
     return this.departmentsService.findAll();
   }
 
+  @Post('find-by-country')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
+  @ApiOperation({ summary: 'Obtener la lista de departamentos por país' })
+  findAllByCountry(@Body() body: { country_id: string }) {
+    return this.departmentsService.findAllByCountry(body.country_id);
+  }
+
   @Post('find')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
   @ApiOperation({ summary: 'Obtener un departamento por ID' })

@@ -31,6 +31,13 @@ export class MunicipalitiesController {
     return this.municipalitiesService.findAll();
   }
 
+  @Post('find-by-department')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
+  @ApiOperation({ summary: 'Obtener la lista de municipios por departamento' })
+  findAllByDepartment(@Body() body: { department_id: string }) {
+    return this.municipalitiesService.findAllByDepartment(body.department_id);
+  }
+
   @Post('find')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
   @ApiOperation({ summary: 'Obtener un municipio por ID' })
