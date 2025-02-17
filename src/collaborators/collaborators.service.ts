@@ -77,16 +77,20 @@ export class CollaboratorsService {
       where: { id_collaborator: collaborator_id },
     });
 
-    if (!collaborator) {
-      throw new NotFoundException('Colaborador no encontrado.');
+    if (!collaborator.is_active) {
+      throw new BadRequestException('El colaborador ya está desactivado.');
     }
 
     await this.prisma.collaborator.update({
       where: { id_collaborator: collaborator_id },
-      data: { is_active: false },
+      data: { is_active: !collaborator.is_active },
     });
 
-    return { message: 'Colaborador desactivado exitosamente' };
+    return {
+      message: collaborator.is_active
+        ? 'Colaborador desactivado exitosamente'
+        : 'Colaborador activado exitosamente',
+    };
   }
 
   async findAll() {
