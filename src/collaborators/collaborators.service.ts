@@ -91,7 +91,6 @@ export class CollaboratorsService {
 
   async findAll() {
     return this.prisma.collaborator.findMany({
-      where: { is_active: true },
       include: { companies: { include: { company: true } } },
     });
   }
