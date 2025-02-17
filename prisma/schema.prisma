@@ -95,14 +95,14 @@ model Collaborator {
 
 // Relación muchos a muchos entre Collaborator y Company
 model CollaboratorCompany {
-  id_collaborator_company String @id @default(uuid())
-  collaborator_id         String @db.VarChar(36)
-  company_id          String @db.VarChar(36)
-  start_date          DateTime @default(now())
-  end_date            DateTime?
+  id_collaborator_company   String @id @default(uuid())
+  collaborator_id           String @db.VarChar(36)
+  company_id                String @db.VarChar(36)
+  start_date                DateTime @default(now())
+  end_date                  DateTime?
 
-  collaborator            Collaborator @relation(fields: [collaborator_id], references: [id_collaborator])
-  company             Company  @relation(fields: [company_id], references: [id_company])
+  collaborator              Collaborator @relation(fields: [collaborator_id], references: [id_collaborator])
+  company                   Company  @relation(fields: [company_id], references: [id_company])
 
   @@unique([collaborator_id, company_id]) // Evitar duplicaciones
 }
@@ -176,6 +176,7 @@ model Session {
   device_type   String? @db.VarChar(50)
   device_os     String? @db.VarChar(50)
   ip_address    String? @db.VarChar(50)
+  is_active     Boolean @default(true)
 
   user          User @relation(fields: [user_id], references: [id_user])
 }

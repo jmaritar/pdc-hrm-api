@@ -11,14 +11,14 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
+    AuthModule,
     UsersModule,
     CollaboratorsModule,
     CompaniesModule,
     GeographyModule,
     LogsModule,
     PrismaModule,
-    AuthModule,
-  ], // 🔹 Se asegura que AuthModule está presente
+  ],
   controllers: [HelloController],
 })
 export class AppModule {}

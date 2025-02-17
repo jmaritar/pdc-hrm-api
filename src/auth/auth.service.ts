@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 
 import * as bcrypt from 'bcrypt';
 
@@ -51,10 +51,34 @@ export class AuthService {
     return this.generateTokens(user, platform);
   }
 
+  async logout({ refresh_token }: RefreshTokenDto): Promise<{ message: string }> {
+    const session = await this.prisma.session.findUnique({
+      where: { refresh_token },
+    });
+
+    if (!session) {
+      throw new UnauthorizedException('Refresh token inválido');
+    }
+
+    await this.prisma.session.update({
+      where: { refresh_token },
+      data: { is_active: false },
+    });
+
+    return { message: 'Logout exitoso' };
+  }
+
   private async generateTokens(
-    user: { id_user: string; role: UserRole },
+    user: User,
     platform: string
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<{
+    access_token: string;
+    refresh_token: string;
+    user: Omit<
+      User,
+      'id_user' | 'password' | 'created_at' | 'created_by' | 'updated_at' | 'updated_by'
+    >;
+  }> {
     const payload = { sub: user.id_user, role: user.role };
 
     const access_token = this.jwtService.sign(payload, {
@@ -77,7 +101,15 @@ export class AuthService {
       },
     });
 
-    return { access_token, refresh_token };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id_user, password, created_at, created_by, updated_at, updated_by, ...sanitizedUser } =
+      user;
+
+    return {
+      access_token,
+      refresh_token,
+      user: sanitizedUser,
+    };
   }
 
   async refreshToken(

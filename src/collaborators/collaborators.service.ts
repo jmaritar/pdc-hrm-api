@@ -1,81 +1,98 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { LogAction } from '@prisma/client';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { LogsService } from '@/logs/logs.service';
-import { PrismaService } from '@/prisma/prisma.service';
-
+import { PrismaService } from '../prisma/prisma.service';
+import { AssignCompanyDto } from './dto/assign-company.dto';
 import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
-import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
 
 @Injectable()
 export class CollaboratorsService {
-  constructor(
-    private prisma: PrismaService,
-    private logsService: LogsService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.collaborator.findMany();
-  }
-  async findOne(id: string) {
-    const collaborator = await this.prisma.collaborator.findUnique({
-      where: { id_collaborator: id },
+  async create(data: CreateCollaboratorDto) {
+    const existingCollaborator = await this.prisma.collaborator.findFirst({
+      where: { email: data.email },
     });
-    if (!collaborator) throw new BadRequestException('Colaborador no encontrado');
-    return collaborator;
+
+    if (existingCollaborator) {
+      throw new BadRequestException('El colaborador ya existe.');
+    }
+
+    const collaborator = await this.prisma.collaborator.create({
+      data: {
+        name: data.name,
+        age: data.age,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        salary: data.salary,
+        start_date: data.start_date ? new Date(data.start_date) : null,
+        end_date: data.end_date ? new Date(data.end_date) : null,
+        position: data.position,
+      },
+    });
+
+    return { message: 'Colaborador creado exitosamente', collaborator };
   }
 
-  async create(data: CreateCollaboratorDto, userId: string) {
+  async assignCompany(data: AssignCompanyDto) {
+    const collaborator = await this.prisma.collaborator.findUnique({
+      where: { id_collaborator: data.collaborator_id },
+    });
+
+    if (!collaborator) {
+      throw new NotFoundException('Colaborador no encontrado.');
+    }
+
     const company = await this.prisma.company.findUnique({
       where: { id_company: data.company_id },
     });
-    if (!company) throw new BadRequestException('Empresa no encontrada');
 
-    const collaborator = await this.prisma.collaborator.create({ data });
-    await this.logsService.createLog(
-      userId,
-      'Collaborator',
-      LogAction.CREATE,
-      collaborator.id_collaborator,
-      null
-    );
-    return collaborator;
-  }
+    if (!company) {
+      throw new NotFoundException('Empresa no encontrada.');
+    }
 
-  async update(id: string, data: UpdateCollaboratorDto, userId: string) {
-    const before = await this.findOne(id);
-    const updated = await this.prisma.collaborator.update({
-      where: { id_collaborator: id },
-      data,
+    const existingRelation = await this.prisma.collaboratorCompany.findFirst({
+      where: {
+        collaborator_id: data.collaborator_id,
+        company_id: data.company_id,
+      },
     });
 
-    await this.logsService.createLog(
-      userId,
-      'Collaborator',
-      LogAction.UPDATE,
-      id,
-      JSON.stringify(before),
-      JSON.stringify(updated)
-    );
+    if (existingRelation) {
+      throw new BadRequestException('El colaborador ya está asignado a esta empresa.');
+    }
 
-    return updated;
-  }
-
-  async remove(id: string, userId: string) {
-    const before = await this.findOne(id);
-    const deleted = await this.prisma.collaborator.delete({
-      where: { id_collaborator: id },
+    await this.prisma.collaboratorCompany.create({
+      data: {
+        collaborator_id: data.collaborator_id,
+        company_id: data.company_id,
+      },
     });
 
-    await this.logsService.createLog(
-      userId,
-      'Collaborator',
-      LogAction.DELETE,
-      id,
-      JSON.stringify(before),
-      null
-    );
+    return { message: 'Colaborador asignado a la empresa exitosamente' };
+  }
 
-    return deleted;
+  async deactivate(collaborator_id: string) {
+    const collaborator = await this.prisma.collaborator.findUnique({
+      where: { id_collaborator: collaborator_id },
+    });
+
+    if (!collaborator) {
+      throw new NotFoundException('Colaborador no encontrado.');
+    }
+
+    await this.prisma.collaborator.update({
+      where: { id_collaborator: collaborator_id },
+      data: { is_active: false },
+    });
+
+    return { message: 'Colaborador desactivado exitosamente' };
+  }
+
+  async findAll() {
+    return this.prisma.collaborator.findMany({
+      where: { is_active: true },
+      include: { companies: { include: { company: true } } },
+    });
   }
 }

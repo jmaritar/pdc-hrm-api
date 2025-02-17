@@ -3,8 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-
-// import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -21,5 +20,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Iniciar sesión en la plataforma web (SUPER_ADMIN, ADMIN)' })
   async loginAdmin(@Body() loginDto: LoginDto) {
     return this.authService.loginAdmin(loginDto);
+  }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'Cerrar sesión' })
+  async logout(@Body() refreshToken: RefreshTokenDto) {
+    return this.authService.logout(refreshToken);
   }
 }

@@ -31,12 +31,12 @@ export class UsersService {
         data.password = hash;
       }
 
-      // const user = await this.prisma.user.create({ data });
-      await this.prisma.user.create({ data });
+      // await this.prisma.user.create({ data });
+      const user = await this.prisma.user.create({ data });
 
       return {
         message: 'Usuario creado exitosamente',
-        // data: user,
+        data: user,
         statusCode: 201,
       };
     } catch {

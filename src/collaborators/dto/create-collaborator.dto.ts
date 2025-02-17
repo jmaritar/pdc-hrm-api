@@ -1,24 +1,60 @@
-import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateCollaboratorDto {
+  @ApiProperty({ example: 'John Doe', description: 'Nombre del colaborador' })
   @IsString()
-  @IsNotEmpty({ message: 'El nombre es obligatorio' })
   name: string;
 
-  @IsInt()
-  @Min(18, { message: 'La edad mínima es 18 años' })
-  @Max(65, { message: 'La edad máxima es 65 años' })
+  @ApiProperty({ example: 30, description: 'Edad del colaborador' })
+  @IsNumber()
   age: number;
 
+  @ApiProperty({
+    example: 'johndoe@example.com',
+    description: 'Correo electrónico',
+    required: false,
+  })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiProperty({ example: '+123456789', description: 'Teléfono', required: false })
   @IsOptional()
   @IsString()
   phone?: string;
 
+  @ApiProperty({ example: '123 Street, City', description: 'Dirección', required: false })
   @IsOptional()
-  @IsEmail({}, { message: 'El correo electrónico no es válido' })
-  email?: string;
-
   @IsString()
-  @IsNotEmpty({ message: 'Debe asociarse a una empresa' })
-  company_id: string;
+  address?: string;
+
+  @ApiProperty({ example: 5000, description: 'Salario', required: false })
+  @IsOptional()
+  @IsNumber()
+  salary?: number;
+
+  @ApiProperty({
+    example: '2024-01-01T00:00:00.000Z',
+    description: 'Fecha de inicio',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  start_date?: string;
+
+  @ApiProperty({
+    example: '2024-12-31T00:00:00.000Z',
+    description: 'Fecha de fin',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  end_date?: string;
+
+  @ApiProperty({ example: 'Software Engineer', description: 'Posición', required: false })
+  @IsOptional()
+  @IsString()
+  position?: string;
 }
