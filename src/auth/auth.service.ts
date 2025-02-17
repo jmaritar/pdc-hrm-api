@@ -33,22 +33,45 @@ export class AuthService {
     return this.generateTokens(user, platform);
   }
 
-  async loginAdmin({
-    email,
-    password,
-    platform,
-  }: LoginDto): Promise<{ access_token: string; refresh_token: string }> {
+  async loginAdmin({ email, password, platform }: LoginDto): Promise<{
+    statusCode: number;
+    message: string;
+    user?: Omit<
+      User,
+      'id_user' | 'password' | 'created_at' | 'created_by' | 'updated_at' | 'updated_by'
+    >;
+    access_token: string;
+    refresh_token: string;
+  }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Credenciales incorrectas');
+      return {
+        statusCode: 401,
+        message: 'Credenciales incorrectas',
+        access_token: '',
+        refresh_token: '',
+      };
     }
 
     if (user.role !== UserRole.SUPER_ADMIN && user.role !== UserRole.ADMIN) {
-      throw new UnauthorizedException('No tienes permisos para acceder a la plataforma web');
+      return {
+        statusCode: 403,
+        message: 'No tienes permisos para acceder a la plataforma web',
+        access_token: '',
+        refresh_token: '',
+      };
     }
 
-    return this.generateTokens(user, platform);
+    const tokens = await this.generateTokens(user, platform);
+
+    return {
+      statusCode: 200,
+      message: 'Inicio de sesión exitoso',
+      user: tokens.user,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+    };
   }
 
   async logout({ refresh_token }: RefreshTokenDto): Promise<{ message: string }> {

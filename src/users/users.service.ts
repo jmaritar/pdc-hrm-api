@@ -7,6 +7,7 @@ import {
 
 import { PrismaService } from '@/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { validateOrReject } from 'class-validator';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -47,12 +48,40 @@ export class UsersService {
   async findAll() {
     try {
       const users = await this.prisma.user.findMany();
+      if (users.length === 0) {
+        throw new NotFoundException('No se encontraron usuarios');
+      }
       return {
         message: 'Lista de usuarios obtenida exitosamente',
         data: users,
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Error al obtener los usuarios');
+    }
+  }
+
+  async deactivate(user_id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id_user: user_id } });
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    try {
+      await this.prisma.user.update({
+        where: { id_user: user_id },
+        data: { is_active: !user.is_active },
+      });
+
+      return {
+        message: 'Usuario desactivado exitosamente',
+        data: null,
+        statusCode: 200,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al desactivar el usuario');
     }
   }
 
@@ -76,8 +105,11 @@ export class UsersService {
     await this.findOne(id);
 
     try {
-      if (data.password) {
+      if (data.password !== null && data.password !== '') {
+        await validateOrReject(Object.assign(new UpdateUserDto(), { password: data.password }));
         data.password = bcrypt.hashSync(data.password, 10);
+      } else {
+        delete data.password;
       }
 
       const updatedUser = await this.prisma.user.update({ where: { id_user: id }, data });
@@ -85,6 +117,7 @@ export class UsersService {
       return {
         message: 'Usuario actualizado exitosamente',
         data: updatedUser,
+        statusCode: 200,
       };
     } catch {
       throw new InternalServerErrorException('Error al actualizar el usuario');
