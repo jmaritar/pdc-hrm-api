@@ -15,13 +15,14 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles('SUPER_ADMIN', 'ADMIN')
+  @Roles('SUPER_ADMIN')
   @ApiOperation({ summary: 'Crear un nuevo usuario (Solo SUPER_ADMIN)' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get('all')
+  @Roles('SUPER_ADMIN')
   @ApiOperation({ summary: 'Obtener todos los usuarios' })
   findAll() {
     return this.usersService.findAll();
