@@ -5,11 +5,11 @@ import { LogsModule } from '@/logs/logs.module';
 import { PrismaService } from '@/prisma/prisma.service';
 
 import { CompaniesController } from './companies.controller';
-import { CompaniesService } from './companies.service';
+import { CompaniesService, CompanyTypesService } from './companies.service';
 
 @Module({
   imports: [AuthModule, LogsModule],
   controllers: [CompaniesController],
-  providers: [CompaniesService, PrismaService],
+  providers: [CompaniesService, CompanyTypesService, PrismaService],
 })
 export class CompaniesModule {}

@@ -1,12 +1,38 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '@/prisma/prisma.service';
 
 import { CreateCountryDto } from './dto/create-country.dto';
+import { UpdateCountryDto } from './dto/update-country.dto';
 
 @Injectable()
 export class CountriesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findAll() {
+    try {
+      const countries = await this.prisma.country.findMany();
+
+      if (countries.length === 0) {
+        throw new NotFoundException('No se encontraron países');
+      }
+
+      return {
+        message: 'Lista de países obtenida exitosamente',
+        data: countries,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al obtener los países');
+    }
+  }
 
   async create(data: CreateCountryDto) {
     const existingCountry = await this.prisma.country.findFirst({
@@ -14,28 +40,103 @@ export class CountriesService {
     });
 
     if (existingCountry) {
-      throw new BadRequestException('El país ya está registrado.');
+      throw new ConflictException('El país ya está registrado');
     }
 
-    const country = await this.prisma.country.create({
-      data: {
-        name: data.name,
-        code: data.code,
-        phone_code: data.phone_code,
-        currency_code: data.currency_code,
-        currency_name: data.currency_name,
-        currency_symbol: data.currency_symbol,
-        flag: data.flag,
-        language: data.language,
-        capital: data.capital,
-        is_active: data.is_active,
-      },
-    });
+    try {
+      const country = await this.prisma.country.create({
+        data: {
+          name: data.name,
+          code: data.code,
+          is_active: data.is_active ?? true,
+        },
+      });
 
-    return { message: 'País creado exitosamente', country };
+      return {
+        message: 'País creado exitosamente',
+        data: country,
+        statusCode: 201,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al crear el país');
+    }
   }
 
-  async findAll() {
-    return this.prisma.country.findMany();
+  async update(id: string, data: UpdateCountryDto) {
+    await this.findOne(id);
+
+    try {
+      const updatedCountry = await this.prisma.country.update({
+        where: { id_country: id },
+        data,
+      });
+
+      return {
+        message: 'País actualizado exitosamente',
+        data: updatedCountry,
+        statusCode: 200,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al actualizar el país');
+    }
+  }
+
+  async deactivate(id: string) {
+    const country = await this.prisma.country.findUnique({
+      where: { id_country: id },
+    });
+
+    if (!country) {
+      throw new NotFoundException('País no encontrado');
+    }
+
+    try {
+      await this.prisma.country.update({
+        where: { id_country: id },
+        data: { is_active: !country.is_active },
+      });
+
+      return {
+        message: 'País desactivado exitosamente',
+        data: null,
+        statusCode: 200,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al desactivar el país');
+    }
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+
+    try {
+      await this.prisma.country.delete({ where: { id_country: id } });
+
+      return {
+        message: 'País eliminado exitosamente',
+        data: null,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al eliminar el país');
+    }
+  }
+
+  async findOne(id: string) {
+    try {
+      const country = await this.prisma.country.findUnique({
+        where: { id_country: id },
+      });
+
+      if (!country) {
+        throw new NotFoundException('País no encontrado');
+      }
+
+      return {
+        message: 'País encontrado exitosamente',
+        data: country,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al buscar el país');
+    }
   }
 }

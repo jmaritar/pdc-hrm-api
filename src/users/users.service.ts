@@ -16,6 +16,24 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
+  async findAll() {
+    try {
+      const users = await this.prisma.user.findMany();
+      if (users.length === 0) {
+        throw new NotFoundException('No se encontraron usuarios');
+      }
+      return {
+        message: 'Lista de usuarios obtenida exitosamente',
+        data: users,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al obtener los usuarios');
+    }
+  }
+
   async create(data: CreateUserDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: data.email },
@@ -45,21 +63,26 @@ export class UsersService {
     }
   }
 
-  async findAll() {
+  async update(id: string, data: UpdateUserDto) {
+    await this.findOne(id);
+
     try {
-      const users = await this.prisma.user.findMany();
-      if (users.length === 0) {
-        throw new NotFoundException('No se encontraron usuarios');
+      if (data.password !== null && data.password !== '') {
+        await validateOrReject(Object.assign(new UpdateUserDto(), { password: data.password }));
+        data.password = bcrypt.hashSync(data.password, 10);
+      } else {
+        delete data.password;
       }
+
+      const updatedUser = await this.prisma.user.update({ where: { id_user: id }, data });
+
       return {
-        message: 'Lista de usuarios obtenida exitosamente',
-        data: users,
+        message: 'Usuario actualizado exitosamente',
+        data: updatedUser,
+        statusCode: 200,
       };
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Error al obtener los usuarios');
+    } catch {
+      throw new InternalServerErrorException('Error al actualizar el usuario');
     }
   }
 
@@ -85,6 +108,21 @@ export class UsersService {
     }
   }
 
+  async remove(id: string) {
+    await this.findOne(id);
+
+    try {
+      await this.prisma.user.delete({ where: { id_user: id } });
+
+      return {
+        message: 'Usuario eliminado exitosamente',
+        data: null,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al eliminar el usuario');
+    }
+  }
+
   async findOne(id: string) {
     try {
       const user = await this.prisma.user.findUnique({ where: { id_user: id } });
@@ -98,44 +136,6 @@ export class UsersService {
       };
     } catch {
       throw new InternalServerErrorException('Error al buscar el usuario');
-    }
-  }
-
-  async update(id: string, data: UpdateUserDto) {
-    await this.findOne(id);
-
-    try {
-      if (data.password !== null && data.password !== '') {
-        await validateOrReject(Object.assign(new UpdateUserDto(), { password: data.password }));
-        data.password = bcrypt.hashSync(data.password, 10);
-      } else {
-        delete data.password;
-      }
-
-      const updatedUser = await this.prisma.user.update({ where: { id_user: id }, data });
-
-      return {
-        message: 'Usuario actualizado exitosamente',
-        data: updatedUser,
-        statusCode: 200,
-      };
-    } catch {
-      throw new InternalServerErrorException('Error al actualizar el usuario');
-    }
-  }
-
-  async remove(id: string) {
-    await this.findOne(id); // 🔹 Verifica si el usuario existe antes de eliminar
-
-    try {
-      await this.prisma.user.delete({ where: { id_user: id } });
-
-      return {
-        message: 'Usuario eliminado exitosamente',
-        data: null,
-      };
-    } catch {
-      throw new InternalServerErrorException('Error al eliminar el usuario');
     }
   }
 }
