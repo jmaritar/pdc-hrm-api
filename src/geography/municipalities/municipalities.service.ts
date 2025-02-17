@@ -1,27 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+
+import { PrismaService } from '@/prisma/prisma.service';
 
 import { CreateMunicipalityDto } from './dto/create-municipality.dto';
-import { UpdateMunicipalityDto } from './dto/update-municipality.dto';
 
 @Injectable()
 export class MunicipalitiesService {
-  create(createMunicipalityDto: CreateMunicipalityDto) {
-    return 'This action adds a new municipality';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(data: CreateMunicipalityDto) {
+    const existingMunicipality = await this.prisma.municipality.findFirst({
+      where: { name: data.name, department_id: data.department_id },
+    });
+
+    if (existingMunicipality) {
+      throw new BadRequestException('El municipio ya está registrado en este departamento.');
+    }
+
+    const municipality = await this.prisma.municipality.create({
+      data: {
+        name: data.name,
+        department_id: data.department_id,
+        is_active: data.is_active ?? true,
+      },
+    });
+
+    return { message: 'Municipio creado exitosamente', municipality };
   }
 
-  findAll() {
-    return `This action returns all municipalities`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} municipality`;
-  }
-
-  update(id: number, updateMunicipalityDto: UpdateMunicipalityDto) {
-    return `This action updates a #${id} municipality`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} municipality`;
+  async findAll() {
+    return this.prisma.municipality.findMany({
+      include: { department: true },
+    });
   }
 }

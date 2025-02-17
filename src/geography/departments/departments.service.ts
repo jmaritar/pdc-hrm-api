@@ -1,27 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+
+import { PrismaService } from '@/prisma/prisma.service';
 
 import { CreateDepartmentDto } from './dto/create-department.dto';
-import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Injectable()
 export class DepartmentsService {
-  create(createDepartmentDto: CreateDepartmentDto) {
-    return 'This action adds a new department';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(data: CreateDepartmentDto) {
+    const existingDepartment = await this.prisma.department.findFirst({
+      where: { name: data.name, country_id: data.country_id },
+    });
+
+    if (existingDepartment) {
+      throw new BadRequestException('El departamento ya está registrado en este país.');
+    }
+
+    const department = await this.prisma.department.create({
+      data: {
+        name: data.name,
+        country_id: data.country_id,
+        is_active: data.is_active ?? true,
+      },
+    });
+
+    return { message: 'Departamento creado exitosamente', department };
   }
 
-  findAll() {
-    return `This action returns all departments`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} department`;
-  }
-
-  update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
-    return `This action updates a #${id} department`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} department`;
+  async findAll() {
+    return this.prisma.department.findMany({
+      include: { country: true },
+    });
   }
 }

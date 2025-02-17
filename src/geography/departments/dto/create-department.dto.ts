@@ -7,4 +7,5 @@ export class CreateDepartmentDto {
 
   @IsString()
   country_id: string;
+  is_active: boolean;
 }

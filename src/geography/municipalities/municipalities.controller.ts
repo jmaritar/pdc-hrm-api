@@ -1,35 +1,32 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UserRole } from '@prisma/client';
+
+import { JwtAuthGuard } from '@/auth/auth.guard';
+import { Roles } from '@/auth/roles.decorator';
+import { RolesGuard } from '@/auth/roles.guard';
 
 import { CreateMunicipalityDto } from './dto/create-municipality.dto';
-import { UpdateMunicipalityDto } from './dto/update-municipality.dto';
 import { MunicipalitiesService } from './municipalities.service';
 
-@Controller('geography/municipalities')
+@ApiTags('Municipalities')
+@ApiBearerAuth()
+@Controller('municipalities')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class MunicipalitiesController {
   constructor(private readonly municipalitiesService: MunicipalitiesService) {}
 
   @Post()
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Crear un nuevo municipio' })
   create(@Body() createMunicipalityDto: CreateMunicipalityDto) {
     return this.municipalitiesService.create(createMunicipalityDto);
   }
 
-  @Get()
+  @Get('/list')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
+  @ApiOperation({ summary: 'Obtener la lista de municipios' })
   findAll() {
     return this.municipalitiesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.municipalitiesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMunicipalityDto: UpdateMunicipalityDto) {
-    return this.municipalitiesService.update(+id, updateMunicipalityDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.municipalitiesService.remove(+id);
   }
 }

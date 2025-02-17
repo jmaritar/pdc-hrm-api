@@ -1,36 +1,57 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class CreateCompanyDto {
+  @ApiProperty({ example: 'Tech Solutions S.A.', description: 'Razón social de la empresa' })
   @IsString()
-  @IsNotEmpty({ message: 'La razón social es obligatoria' })
   legal_name: string;
 
+  @ApiProperty({ example: 'Tech Solutions', description: 'Nombre comercial de la empresa' })
   @IsString()
-  @IsNotEmpty({ message: 'El nombre comercial es obligatorio' })
   trade_name: string;
 
+  @ApiProperty({ example: '123456789', description: 'Número de identificación tributaria' })
   @IsString()
-  @Length(10, 20, { message: 'El NIT debe tener entre 10 y 20 caracteres' })
   nit: string;
 
+  @ApiProperty({ example: '+123456789', description: 'Teléfono', required: false })
   @IsOptional()
   @IsString()
   phone?: string;
 
+  @ApiProperty({
+    example: 'info@techsolutions.com',
+    description: 'Correo electrónico',
+    required: false,
+  })
   @IsOptional()
-  @IsEmail({}, { message: 'El correo electrónico no es válido' })
+  @IsEmail()
   email?: string;
 
+  @ApiProperty({ example: '123 Street, City', description: 'Dirección', required: false })
   @IsOptional()
   @IsString()
   address?: string;
 
+  @ApiProperty({
+    example: 'company-type-id',
+    description: 'ID del tipo de empresa',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  company_type_id?: string;
+
+  @ApiProperty({ example: 'country-id', description: 'ID del país' })
   @IsString()
   country_id: string;
 
+  @ApiProperty({ example: 'department-id', description: 'ID del departamento' })
   @IsString()
   department_id: string;
 
+  @ApiProperty({ example: 'municipality-id', description: 'ID del municipio' })
   @IsString()
   municipality_id: string;
 }
