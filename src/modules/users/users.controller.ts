@@ -43,21 +43,21 @@ export class UsersController {
     return this.usersService.update(body.user_id, body.data);
   }
 
-  @Get('find-user')
+  @Post('find-user')
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Obtener un usuario por su ID' })
   findOne(@Body() body: { user_id: string }) {
     return this.usersService.findOne(body.user_id);
   }
 
-  @Get('find-company-users')
+  @Post('find-company-users')
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Obtener todos los usuarios de una empresa' })
   findCompanyUsers(@Body() body: { company_id: string }) {
     return this.usersService.findCompanyUsers(body.company_id);
   }
 
-  @Get('find-user-companies')
+  @Post('find-user-companies')
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Obtener todas las empresas de un usuario' })
   findUserCompanies(@Body() body: { user_id: string }) {

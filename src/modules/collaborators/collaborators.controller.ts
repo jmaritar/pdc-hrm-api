@@ -44,7 +44,7 @@ export class CollaboratorsController {
     return this.collaboratorsService.findAll();
   }
 
-  @Get('find-all-by-company')
+  @Post('find-all-by-company')
   @Roles(UserRole.SUPER_ADMIN, UserRole.HR)
   @ApiOperation({ summary: 'Obtener la lista de colaboradores de una empresa' })
   findAllByCompany(@Body() body: { company_id: string }) {
