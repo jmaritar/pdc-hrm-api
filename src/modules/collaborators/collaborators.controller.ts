@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 
@@ -8,6 +8,7 @@ import { RolesGuard } from '../../auth/roles.guard';
 import { CollaboratorsService } from './collaborators.service';
 import { AssignCompanyDto } from './dto/assign-company.dto';
 import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
+import { FindAllByCompanyDto } from './dto/find-all-by-company-dto';
 
 @ApiTags('Collaborators')
 @ApiBearerAuth()
@@ -21,6 +22,13 @@ export class CollaboratorsController {
   @ApiOperation({ summary: 'Crear un nuevo colaborador' })
   create(@Body() createCollaboratorDto: CreateCollaboratorDto) {
     return this.collaboratorsService.create(createCollaboratorDto);
+  }
+
+  @Put()
+  @Roles(UserRole.SUPER_ADMIN, UserRole.HR)
+  @ApiOperation({ summary: 'Actualizar un colaborador' })
+  update(@Body() updateCollaboratorDto: CreateCollaboratorDto) {
+    return this.collaboratorsService.update(updateCollaboratorDto);
   }
 
   @Post('/assign-company')
@@ -37,7 +45,7 @@ export class CollaboratorsController {
     return this.collaboratorsService.deactivate(body.collaborator_id);
   }
 
-  @Get('/list')
+  @Post('/list')
   @Roles(UserRole.SUPER_ADMIN, UserRole.HR)
   @ApiOperation({ summary: 'Obtener la lista de colaboradores' })
   findAll() {
@@ -47,7 +55,7 @@ export class CollaboratorsController {
   @Post('find-all-by-company')
   @Roles(UserRole.SUPER_ADMIN, UserRole.HR)
   @ApiOperation({ summary: 'Obtener la lista de colaboradores de una empresa' })
-  findAllByCompany(@Body() body: { company_id: string }) {
-    return this.collaboratorsService.findAllByCompany(body.company_id);
+  findAllByCompany(@Body() body: FindAllByCompanyDto) {
+    return this.collaboratorsService.findAllByCompany(body);
   }
 }

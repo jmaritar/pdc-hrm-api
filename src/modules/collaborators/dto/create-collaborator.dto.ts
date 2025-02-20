@@ -3,6 +3,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateCollaboratorDto {
+  @ApiProperty({ example: 'uuid-collaborator', description: 'ID del colaborador', required: false })
+  @IsUUID()
+  @IsOptional()
+  id_collaborator?: string;
+
   @ApiProperty({ example: 'John Doe', description: 'Nombre del colaborador' })
   @IsString()
   name: string;

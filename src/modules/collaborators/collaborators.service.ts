@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { AssignCompanyDto } from './dto/assign-company.dto';
 import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
+import { FindAllByCompanyDto } from './dto/find-all-by-company-dto';
 import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
 
 @Injectable()
@@ -77,9 +78,9 @@ export class CollaboratorsService {
     return collaborator;
   }
 
-  async update(id: string, data: UpdateCollaboratorDto) {
+  async update(data: UpdateCollaboratorDto) {
     const collaborator = await this.prisma.collaborator.findUnique({
-      where: { id_collaborator: id },
+      where: { id_collaborator: data.id_collaborator },
     });
 
     if (!collaborator) {
@@ -87,7 +88,7 @@ export class CollaboratorsService {
     }
 
     const updatedCollaborator = await this.prisma.collaborator.update({
-      where: { id_collaborator: id },
+      where: { id_collaborator: data.id_collaborator },
       data: {
         name: data.name,
         age: data.age,
@@ -178,18 +179,20 @@ export class CollaboratorsService {
     };
   }
 
-  async findAllByCompany(company_id: string) {
+  async findAllByCompany(data: FindAllByCompanyDto) {
     const company = await this.prisma.company.findUnique({
-      where: { id_company: company_id },
+      where: { id_company: data.company_id },
     });
 
     if (!company) {
       throw new NotFoundException('Empresa no encontrada.');
     }
 
-    return this.prisma.collaboratorCompany.findMany({
-      where: { company_id },
+    const collaborators = await this.prisma.collaboratorCompany.findMany({
+      where: { company_id: data.company_id },
       include: { collaborator: true },
     });
+
+    return collaborators.map(({ collaborator }) => collaborator);
   }
 }

@@ -9,8 +9,10 @@ import { PrismaService } from '@/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { validateOrReject } from 'class-validator';
 
+import { CompanyIdDto } from '../companies/dto/company-id';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserIdDto } from './dto/user-id';
 
 @Injectable()
 export class UsersService {
@@ -141,10 +143,10 @@ export class UsersService {
 
   // Para el endpoint GET /users/find-company-users
   // Este muestra los usuarios de una empresa
-  async findCompanyUsers(company_id: string) {
+  async findCompanyUsers(data: CompanyIdDto) {
     try {
       const users = await this.prisma.userCompany.findMany({
-        where: { company_id: company_id },
+        where: { company_id: data.company_id },
         include: { user: true },
       });
 
@@ -166,10 +168,10 @@ export class UsersService {
 
   // Para el endpoint GET /users/find-user-companies
   // Este muestra las empresas de un usuario
-  async findUserCompanies(user_id: string) {
+  async findUserCompanies(data: UserIdDto) {
     try {
       const companies = await this.prisma.userCompany.findMany({
-        where: { user_id: user_id },
+        where: { user_id: data.user_id },
         include: { company: true },
       });
 

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "types": ["node"],
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -17,4 +18,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   }
+  // "include": ["src", "src/types"]
 }

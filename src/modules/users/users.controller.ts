@@ -54,13 +54,13 @@ export class UsersController {
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Obtener todos los usuarios de una empresa' })
   findCompanyUsers(@Body() body: { company_id: string }) {
-    return this.usersService.findCompanyUsers(body.company_id);
+    return this.usersService.findCompanyUsers(body);
   }
 
   @Post('find-user-companies')
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Obtener todas las empresas de un usuario' })
   findUserCompanies(@Body() body: { user_id: string }) {
-    return this.usersService.findUserCompanies(body.user_id);
+    return this.usersService.findUserCompanies(body);
   }
 }
