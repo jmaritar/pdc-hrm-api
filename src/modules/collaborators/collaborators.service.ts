@@ -18,11 +18,15 @@ export class CollaboratorsService {
 
     if (existingCollaborator) {
       if (existingCollaborator.companies.length > 0) {
-        throw new BadRequestException('El colaborador ya existe y está asignado a una empresa.');
+        return {
+          message: 'El colaborador ya existe y está asignado a una empresa.',
+          collaborator: existingCollaborator,
+        };
       }
-      throw new BadRequestException(
-        'El colaborador ya existe pero no está asignado a ninguna empresa. Use el endpoint de asignación.'
-      );
+      return {
+        message: 'El colaborador ya existe pero no está asignado a ninguna empresa.',
+        collaborator: existingCollaborator,
+      };
     }
 
     const collaborator = await this.prisma.collaborator.create({
@@ -57,6 +61,44 @@ export class CollaboratorsService {
     }
 
     return { message: 'Colaborador creado exitosamente', collaborator };
+  }
+
+  async assignCompany(data: AssignCompanyDto) {
+    const collaborator = await this.prisma.collaborator.findUnique({
+      where: { id_collaborator: data.collaborator_id },
+    });
+
+    if (!collaborator) {
+      throw new NotFoundException('Colaborador no encontrado.');
+    }
+
+    const company = await this.prisma.company.findUnique({
+      where: { id_company: data.company_id },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Empresa no encontrada.');
+    }
+
+    const existingRelation = await this.prisma.collaboratorCompany.findFirst({
+      where: {
+        collaborator_id: data.collaborator_id,
+        company_id: data.company_id,
+      },
+    });
+
+    if (existingRelation) {
+      throw new BadRequestException('El colaborador ya está asignado a esta empresa.');
+    }
+
+    await this.prisma.collaboratorCompany.create({
+      data: {
+        collaborator_id: data.collaborator_id,
+        company_id: data.company_id,
+      },
+    });
+
+    return { message: 'Colaborador asignado a la empresa exitosamente' };
   }
 
   async findAll() {
@@ -118,44 +160,6 @@ export class CollaboratorsService {
     });
 
     return { message: 'Colaborador eliminado exitosamente' };
-  }
-
-  async assignCompany(data: AssignCompanyDto) {
-    const collaborator = await this.prisma.collaborator.findUnique({
-      where: { id_collaborator: data.collaborator_id },
-    });
-
-    if (!collaborator) {
-      throw new NotFoundException('Colaborador no encontrado.');
-    }
-
-    const company = await this.prisma.company.findUnique({
-      where: { id_company: data.company_id },
-    });
-
-    if (!company) {
-      throw new NotFoundException('Empresa no encontrada.');
-    }
-
-    const existingRelation = await this.prisma.collaboratorCompany.findFirst({
-      where: {
-        collaborator_id: data.collaborator_id,
-        company_id: data.company_id,
-      },
-    });
-
-    if (existingRelation) {
-      throw new BadRequestException('El colaborador ya está asignado a esta empresa.');
-    }
-
-    await this.prisma.collaboratorCompany.create({
-      data: {
-        collaborator_id: data.collaborator_id,
-        company_id: data.company_id,
-      },
-    });
-
-    return { message: 'Colaborador asignado a la empresa exitosamente' };
   }
 
   async deactivate(collaborator_id: string) {
