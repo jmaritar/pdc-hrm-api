@@ -138,4 +138,54 @@ export class UsersService {
       throw new InternalServerErrorException('Error al buscar el usuario');
     }
   }
+
+  // Para el endpoint GET /users/find-company-users
+  // Este muestra los usuarios de una empresa
+  async findCompanyUsers(company_id: string) {
+    try {
+      const users = await this.prisma.userCompany.findMany({
+        where: { company_id: company_id },
+        include: { user: true },
+      });
+
+      if (users.length === 0) {
+        throw new NotFoundException('No se encontraron usuarios');
+      }
+
+      return {
+        message: 'Lista de usuarios obtenida exitosamente',
+        data: users,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al obtener los usuarios');
+    }
+  }
+
+  // Para el endpoint GET /users/find-user-companies
+  // Este muestra las empresas de un usuario
+  async findUserCompanies(user_id: string) {
+    try {
+      const companies = await this.prisma.userCompany.findMany({
+        where: { user_id: user_id },
+        include: { company: true },
+      });
+
+      if (companies.length === 0) {
+        throw new NotFoundException('No se encontraron empresas');
+      }
+
+      return {
+        message: 'Lista de empresas obtenida exitosamente',
+        data: companies,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al obtener las empresas');
+    }
+  }
 }

@@ -2,9 +2,9 @@ import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 
-import { JwtAuthGuard } from '../auth/auth.guard';
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/roles.guard';
+import { JwtAuthGuard } from '../../auth/auth.guard';
+import { Roles } from '../../auth/roles.decorator';
+import { RolesGuard } from '../../auth/roles.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 
@@ -41,5 +41,26 @@ export class UsersController {
   @ApiOperation({ summary: 'Actualizar un usuario (Solo SUPER_ADMIN)' })
   update(@Body() body: { user_id: string; data: CreateUserDto }) {
     return this.usersService.update(body.user_id, body.data);
+  }
+
+  @Get('find-user')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Obtener un usuario por su ID' })
+  findOne(@Body() body: { user_id: string }) {
+    return this.usersService.findOne(body.user_id);
+  }
+
+  @Get('find-company-users')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Obtener todos los usuarios de una empresa' })
+  findCompanyUsers(@Body() body: { company_id: string }) {
+    return this.usersService.findCompanyUsers(body.company_id);
+  }
+
+  @Get('find-user-companies')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Obtener todas las empresas de un usuario' })
+  findUserCompanies(@Body() body: { user_id: string }) {
+    return this.usersService.findUserCompanies(body.user_id);
   }
 }

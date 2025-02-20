@@ -25,7 +25,19 @@ model User {
   updated_by      String? @db.VarChar(36)
 
   sessions        Session[]
+  companies       UserCompany[]
   logs            Log[] @relation("UserLogs")
+}
+
+model UserCompany {
+  id_user_company String @id @default(uuid())
+  user_id         String @db.VarChar(36)
+  company_id      String @db.VarChar(36)
+
+  user            User    @relation(fields: [user_id], references: [id_user])
+  company         Company @relation(fields: [company_id], references: [id_company])
+
+  @@unique([user_id, company_id]) // Evitar duplicaciones
 }
 
 enum UserRole {
@@ -58,7 +70,8 @@ model Company {
   department      Department   @relation(fields: [department_id], references: [id_department])
   municipality    Municipality @relation(fields: [municipality_id], references: [id_municipality])
   company_type    CompanyType? @relation(fields: [company_type_id], references: [id_company_type])
-  collaborators       CollaboratorCompany[]
+  collaborators   CollaboratorCompany[]
+  users           UserCompany[]
   logs            Log[] @relation("CompanyLogs")
 
 }
@@ -72,25 +85,25 @@ model CompanyType {
 
 // Tabla de colaboradores
 model Collaborator {
-  id_collaborator    String @id @default(uuid())
-  name           String @db.VarChar(255)
-  age            Int
-  phone          String? @db.VarChar(20)
-  email          String? @db.VarChar(255)
-  address        String? @db.VarChar(255)
-  salary         Float?
-  start_date     DateTime?
-  end_date       DateTime?
-  position       String? @db.VarChar(100)
+  id_collaborator     String @id @default(uuid())
+  name                String @db.VarChar(255)
+  age                 Int
+  phone               String? @db.VarChar(20)
+  email               String? @db.VarChar(255)
+  address             String? @db.VarChar(255)
+  salary              Float?
+  start_date          DateTime?
+  end_date            DateTime?
+  position            String? @db.VarChar(100)
 
-  is_active      Boolean @default(true)
-  created_at     DateTime @default(now())
-  updated_at     DateTime? @updatedAt
-  created_by     String? @db.VarChar(36)
-  updated_by     String? @db.VarChar(36)
+  is_active           Boolean @default(true)
+  created_at          DateTime @default(now())
+  updated_at          DateTime? @updatedAt
+  created_by          String? @db.VarChar(36)
+  updated_by          String? @db.VarChar(36)
 
-  companies      CollaboratorCompany[] // Relación muchos a muchos
-  logs           Log[] @relation("CollaboratorLogs")
+  companies           CollaboratorCompany[] // Relación muchos a muchos
+  logs                Log[] @relation("CollaboratorLogs")
 }
 
 // Relación muchos a muchos entre Collaborator y Company

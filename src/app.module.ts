@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from './auth/auth.module';
-import { CollaboratorsModule } from './collaborators/collaborators.module';
-import { CompaniesModule } from './companies/companies.module';
-import { GeographyModule } from './geography/geography.module';
 import { HelloController } from './hello/hello.controller';
-import { LogsModule } from './logs/logs.module';
+import { CollaboratorsModule } from './modules/collaborators/collaborators.module';
+import { CompaniesModule } from './modules/companies/companies.module';
+import { GeographyModule } from './modules/geography/geography.module';
+import { LogsModule } from './modules/logs/logs.module';
+import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { UsersModule } from './users/users.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UsersModule } from './users/users.module';
     CompaniesModule,
     GeographyModule,
     LogsModule,
+    SeedModule,
     PrismaModule,
   ],
   controllers: [HelloController],

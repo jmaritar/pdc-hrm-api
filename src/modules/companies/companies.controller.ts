@@ -2,9 +2,9 @@ import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 
-import { JwtAuthGuard } from '../auth/auth.guard';
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/roles.guard';
+import { JwtAuthGuard } from '../../auth/auth.guard';
+import { Roles } from '../../auth/roles.decorator';
+import { RolesGuard } from '../../auth/roles.guard';
 import { CompaniesService, CompanyTypesService } from './companies.service';
 import { CreateCompanyTypeDto } from './dto/create-company-type.dto';
 import { CreateCompanyDto } from './dto/create-company.dto';

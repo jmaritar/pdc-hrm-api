@@ -1,9 +1,11 @@
+import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { apiReference } from '@scalar/nestjs-api-reference';
 
 import { AppModule } from './app.module';
+import { SeedService } from './seed/seed.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -35,6 +37,18 @@ async function bootstrap() {
     })
   );
 
+  if (process.env.STAGE !== 'prod') {
+    registerSeedRoute(app);
+  }
+
   await app.listen(3000);
 }
+
+function registerSeedRoute(app: INestApplication) {
+  app.getHttpAdapter().get('/seed', async () => {
+    const seedService = app.get(SeedService);
+    await seedService.run();
+  });
+}
+
 bootstrap();

@@ -16,6 +16,16 @@ CREATE TABLE `User` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `UserCompany` (
+    `id_user_company` VARCHAR(191) NOT NULL,
+    `user_id` VARCHAR(36) NOT NULL,
+    `company_id` VARCHAR(36) NOT NULL,
+
+    UNIQUE INDEX `UserCompany_user_id_company_id_key`(`user_id`, `company_id`),
+    PRIMARY KEY (`id_user_company`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Company` (
     `id_company` VARCHAR(191) NOT NULL,
     `legal_name` VARCHAR(255) NOT NULL,
@@ -139,6 +149,12 @@ CREATE TABLE `Session` (
     `refresh_token` VARCHAR(255) NOT NULL,
     `expires_at` DATETIME(3) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `platform` VARCHAR(50) NULL,
+    `device_name` VARCHAR(100) NULL,
+    `device_type` VARCHAR(50) NULL,
+    `device_os` VARCHAR(50) NULL,
+    `ip_address` VARCHAR(50) NULL,
+    `is_active` BOOLEAN NOT NULL DEFAULT true,
 
     UNIQUE INDEX `Session_token_key`(`token`),
     UNIQUE INDEX `Session_refresh_token_key`(`refresh_token`),
@@ -188,6 +204,12 @@ CREATE TABLE `_UserLogs` (
     UNIQUE INDEX `_UserLogs_AB_unique`(`A`, `B`),
     INDEX `_UserLogs_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `UserCompany` ADD CONSTRAINT `UserCompany_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id_user`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `UserCompany` ADD CONSTRAINT `UserCompany_company_id_fkey` FOREIGN KEY (`company_id`) REFERENCES `Company`(`id_company`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Company` ADD CONSTRAINT `Company_country_id_fkey` FOREIGN KEY (`country_id`) REFERENCES `Country`(`id_country`) ON DELETE RESTRICT ON UPDATE CASCADE;
