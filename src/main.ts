@@ -1,4 +1,4 @@
-import './types/request';
+// import './types/request';
 
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
