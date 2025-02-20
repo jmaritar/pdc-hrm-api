@@ -21,11 +21,13 @@ export class CollaboratorsService {
         return {
           message: 'El colaborador ya existe y está asignado a una empresa.',
           collaborator: existingCollaborator,
+          statusCode: 409,
         };
       }
       return {
         message: 'El colaborador ya existe pero no está asignado a ninguna empresa.',
         collaborator: existingCollaborator,
+        statusCode: 409,
       };
     }
 
