@@ -16,15 +16,27 @@ export class CountriesService {
 
   async findAll() {
     try {
-      const countries = await this.prisma.country.findMany();
+      const countries = await this.prisma.country.findMany({
+        include: {
+          _count: {
+            select: { departments: true },
+          },
+        },
+      });
 
       if (countries.length === 0) {
         throw new NotFoundException('No se encontraron países');
       }
 
+      // Formatear los datos para incluir count_departments
+      const formattedCountries = countries.map(country => ({
+        ...country,
+        count_departments: country._count.departments,
+      }));
+
       return {
         message: 'Lista de países obtenida exitosamente',
-        data: countries,
+        data: formattedCountries,
       };
     } catch (error) {
       if (error instanceof NotFoundException) {

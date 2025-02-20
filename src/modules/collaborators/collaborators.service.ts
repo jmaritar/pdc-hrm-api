@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { AssignCompanyDto } from './dto/assign-company.dto';
@@ -18,11 +23,11 @@ export class CollaboratorsService {
 
     if (existingCollaborator) {
       if (existingCollaborator.companies.length > 0) {
-        return {
+        throw new ConflictException({
           message: 'El colaborador ya existe y está asignado a una empresa.',
-          collaborator: existingCollaborator,
-          statusCode: 409,
-        };
+          id_collaborator: existingCollaborator.id_collaborator,
+          email: existingCollaborator.email,
+        });
       }
       return {
         message: 'El colaborador ya existe pero no está asignado a ninguna empresa.',
@@ -51,7 +56,7 @@ export class CollaboratorsService {
       });
 
       if (!company) {
-        throw new NotFoundException('Empresa no encontrada.');
+        return { message: 'Empresa no encontrada', statusCode: 404 };
       }
 
       await this.prisma.collaboratorCompany.create({
@@ -62,7 +67,7 @@ export class CollaboratorsService {
       });
     }
 
-    return { message: 'Colaborador creado exitosamente', collaborator };
+    return { message: 'Colaborador creado exitosamente', collaborator, statusCode: 201 };
   }
 
   async assignCompany(data: AssignCompanyDto) {
