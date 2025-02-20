@@ -12,10 +12,16 @@ export class CollaboratorsService {
   async create(data: CreateCollaboratorDto) {
     const existingCollaborator = await this.prisma.collaborator.findFirst({
       where: { email: data.email },
+      include: { companies: true },
     });
 
     if (existingCollaborator) {
-      throw new BadRequestException('El colaborador ya existe.');
+      if (existingCollaborator.companies.length > 0) {
+        throw new BadRequestException('El colaborador ya existe y está asignado a una empresa.');
+      }
+      throw new BadRequestException(
+        'El colaborador ya existe pero no está asignado a ninguna empresa. Use el endpoint de asignación.'
+      );
     }
 
     const collaborator = await this.prisma.collaborator.create({
@@ -31,6 +37,23 @@ export class CollaboratorsService {
         position: data.position,
       },
     });
+
+    if (data.company_id) {
+      const company = await this.prisma.company.findUnique({
+        where: { id_company: data.company_id },
+      });
+
+      if (!company) {
+        throw new NotFoundException('Empresa no encontrada.');
+      }
+
+      await this.prisma.collaboratorCompany.create({
+        data: {
+          collaborator_id: collaborator.id_collaborator,
+          company_id: data.company_id,
+        },
+      });
+    }
 
     return { message: 'Colaborador creado exitosamente', collaborator };
   }
@@ -153,5 +176,20 @@ export class CollaboratorsService {
         ? 'Colaborador desactivado exitosamente'
         : 'Colaborador activado exitosamente',
     };
+  }
+
+  async findAllByCompany(company_id: string) {
+    const company = await this.prisma.company.findUnique({
+      where: { id_company: company_id },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Empresa no encontrada.');
+    }
+
+    return this.prisma.collaboratorCompany.findMany({
+      where: { company_id },
+      include: { collaborator: true },
+    });
   }
 }
