@@ -52,17 +52,17 @@ export class MunicipalitiesService {
       });
 
       if (municipalities.length === 0) {
-        throw new NotFoundException('No se encontraron municipios');
+        return {
+          message: 'No se encontraron municipios',
+          data: [],
+        };
       }
 
       return {
         message: 'Lista de municipios obtenida exitosamente',
         data: municipalities,
       };
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
+    } catch {
       throw new InternalServerErrorException('Error al obtener los municipios');
     }
   }

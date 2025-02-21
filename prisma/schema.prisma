@@ -51,14 +51,16 @@ model Company {
   id_company      String @id @default(uuid())
   legal_name      String @db.VarChar(255) // Razón social
   trade_name      String @db.VarChar(255) // Nombre comercial
-  nit             String @unique @db.VarChar(50)
-  phone           String? @db.VarChar(20)
-  email           String? @db.VarChar(255)
-  address         String? @db.VarChar(255)
-  company_type_id String? @db.VarChar(36)
+  nit             String @unique @db.VarChar(50) // Número de identificación tributaria
   country_id      String @db.VarChar(36)
   department_id   String @db.VarChar(36)
   municipality_id String @db.VarChar(36)
+
+  phone           String? @db.VarChar(20)
+  email           String? @db.VarChar(255)
+
+  address         String? @db.VarChar(255)
+  company_type_id String? @db.VarChar(36)
 
   is_active       Boolean @default(true)
   created_at      DateTime @default(now())

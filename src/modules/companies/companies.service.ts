@@ -19,22 +19,20 @@ export class CompaniesService {
   async findAll() {
     try {
       const companies = await this.prisma.company.findMany({
-        where: { is_active: true },
-        include: { company_type: true, country: true, department: true, municipality: true },
+        include: {
+          company_type: true,
+          country: true,
+          department: true,
+          municipality: true,
+        },
       });
 
-      if (companies.length === 0) {
-        throw new NotFoundException('No se encontraron empresas');
-      }
-
+      // Retorna un array vacío si no hay compañías
       return {
         message: 'Lista de empresas obtenida exitosamente',
-        data: companies,
+        data: companies.length > 0 ? companies : [],
       };
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
+    } catch {
       throw new InternalServerErrorException('Error al obtener las empresas');
     }
   }
@@ -161,18 +159,13 @@ export class CompanyTypesService {
     try {
       const companyTypes = await this.prisma.companyType.findMany();
 
-      if (companyTypes.length === 0) {
-        throw new NotFoundException('No se encontraron tipos de empresa');
-      }
+      const formattedCompanyTypes = companyTypes.length > 0 ? companyTypes : [];
 
       return {
         message: 'Lista de tipos de empresa obtenida exitosamente',
-        data: companyTypes,
+        data: formattedCompanyTypes,
       };
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
+    } catch {
       throw new InternalServerErrorException('Error al obtener los tipos de empresa');
     }
   }
@@ -202,7 +195,13 @@ export class CompanyTypesService {
   }
 
   async update(id: string, data: UpdateCompanyTypeDto) {
-    await this.findOne(id);
+    const existingType = await this.prisma.companyType.findUnique({
+      where: { id_company_type: id },
+    });
+
+    if (!existingType) {
+      throw new NotFoundException('Tipo de empresa no encontrado');
+    }
 
     try {
       const updatedCompanyType = await this.prisma.companyType.update({

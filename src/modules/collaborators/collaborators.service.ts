@@ -37,6 +37,7 @@ export class CollaboratorsService {
       });
     }
 
+    // Crear el colaborador
     const collaborator = await this.prisma.collaborator.create({
       data: {
         name: data.name,
@@ -50,6 +51,24 @@ export class CollaboratorsService {
         position: data.position,
       },
     });
+
+    // Si se proporciona company_id, asignar el colaborador a la empresa
+    if (data.company_id) {
+      const company = await this.prisma.company.findUnique({
+        where: { id_company: data.company_id },
+      });
+
+      if (!company) {
+        throw new NotFoundException('Empresa no encontrada.');
+      }
+
+      await this.prisma.collaboratorCompany.create({
+        data: {
+          collaborator_id: collaborator.id_collaborator,
+          company_id: data.company_id,
+        },
+      });
+    }
 
     return {
       statusCode: HttpStatus.CREATED,

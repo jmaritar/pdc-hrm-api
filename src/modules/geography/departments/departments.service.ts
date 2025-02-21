@@ -48,21 +48,31 @@ export class DepartmentsService {
     try {
       const departments = await this.prisma.department.findMany({
         where: { country_id: countryId },
-        include: { country: true },
+        include: {
+          country: true,
+          _count: {
+            select: { municipalities: true },
+          },
+        },
       });
 
       if (departments.length === 0) {
-        throw new NotFoundException('No se encontraron departamentos');
+        return {
+          message: 'No se encontraron departamentos',
+          data: [],
+        };
       }
+
+      const formattedDepartments = departments.map(department => ({
+        ...department,
+        count_municipalities: department._count.municipalities,
+      }));
 
       return {
         message: 'Lista de departamentos obtenida exitosamente',
-        data: departments,
+        data: formattedDepartments,
       };
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
+    } catch {
       throw new InternalServerErrorException('Error al obtener los departamentos');
     }
   }

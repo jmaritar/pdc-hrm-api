@@ -21,88 +21,84 @@ export class CompaniesController {
     private readonly companyTypesService: CompanyTypesService
   ) {}
 
+  // -------------- EMPRESAS ---------------- //
+
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @ApiOperation({ summary: 'Crear una nueva empresa' })
-  create(@Body() createCompanyDto: CreateCompanyDto) {
+  createCompany(@Body() createCompanyDto: CreateCompanyDto) {
     return this.companiesService.create(createCompanyDto);
   }
 
   @Get('all')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
   @ApiOperation({ summary: 'Obtener la lista de empresas' })
-  findAll() {
+  getAllCompanies() {
     return this.companiesService.findAll();
   }
 
   @Post('find')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
   @ApiOperation({ summary: 'Obtener una empresa por ID' })
-  findOne(@Body() body: { company_id: string }) {
+  getCompanyById(@Body() body: { company_id: string }) {
     return this.companiesService.findOne(body.company_id);
   }
 
   @Put()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @ApiOperation({ summary: 'Actualizar una empresa' })
-  update(@Body() body: { company_id: string; data: UpdateCompanyDto }) {
+  updateCompany(@Body() body: { company_id: string; data: UpdateCompanyDto }) {
     return this.companiesService.update(body.company_id, body.data);
   }
 
   @Post('deactivate')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @ApiOperation({ summary: 'Activar/Desactivar una empresa' })
-  deactivate(@Body() body: { company_id: string }) {
+  toggleCompanyStatus(@Body() body: { company_id: string }) {
     return this.companiesService.deactivate(body.company_id);
   }
 
   @Post('delete')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @ApiOperation({ summary: 'Eliminar una empresa' })
-  remove(@Body() body: { company_id: string }) {
+  deleteCompany(@Body() body: { company_id: string }) {
     return this.companiesService.remove(body.company_id);
   }
-}
 
-@ApiTags('Company Types')
-@ApiBearerAuth()
-@Controller('company-types')
-@UseGuards(JwtAuthGuard, RolesGuard)
-export class CompanyTypesController {
-  constructor(private readonly companyTypesService: CompanyTypesService) {}
+  // -------------- TIPOS DE EMPRESA ---------------- //
 
-  @Post()
+  @Post('type')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @ApiOperation({ summary: 'Crear un nuevo tipo de empresa' })
-  create(@Body() createCompanyTypeDto: CreateCompanyTypeDto) {
+  createCompanyType(@Body() createCompanyTypeDto: CreateCompanyTypeDto) {
     return this.companyTypesService.create(createCompanyTypeDto);
   }
 
-  @Get('all')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
-  @ApiOperation({ summary: 'Obtener la lista de tipos de empresa' })
-  findAll() {
-    return this.companyTypesService.findAll();
-  }
-
-  @Post('find')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
-  @ApiOperation({ summary: 'Obtener un tipo de empresa por ID' })
-  findOne(@Body() body: { company_type_id: string }) {
-    return this.companyTypesService.findOne(body.company_type_id);
-  }
-
-  @Put()
+  @Put('type')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @ApiOperation({ summary: 'Actualizar un tipo de empresa' })
-  update(@Body() body: { company_type_id: string; data: UpdateCompanyTypeDto }) {
+  updateCompanyType(@Body() body: { company_type_id: string; data: UpdateCompanyTypeDto }) {
     return this.companyTypesService.update(body.company_type_id, body.data);
   }
 
-  @Post('delete')
+  @Get('type/all')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
+  @ApiOperation({ summary: 'Obtener la lista de tipos de empresa' })
+  getAllCompanyTypes() {
+    return this.companyTypesService.findAll();
+  }
+
+  @Post('type/find')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.HR)
+  @ApiOperation({ summary: 'Obtener un tipo de empresa por ID' })
+  getCompanyTypeById(@Body() body: { company_type_id: string }) {
+    return this.companyTypesService.findOne(body.company_type_id);
+  }
+
+  @Post('type/delete')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @ApiOperation({ summary: 'Eliminar un tipo de empresa' })
-  remove(@Body() body: { company_type_id: string }) {
+  deleteCompanyType(@Body() body: { company_type_id: string }) {
     return this.companyTypesService.remove(body.company_type_id);
   }
 }
