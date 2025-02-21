@@ -97,10 +97,7 @@ export class AuthService {
   ): Promise<{
     access_token: string;
     refresh_token: string;
-    user: Omit<
-      User,
-      'id_user' | 'password' | 'created_at' | 'created_by' | 'updated_at' | 'updated_by'
-    >;
+    user: Omit<User, 'password' | 'created_at' | 'created_by' | 'updated_at' | 'updated_by'>;
   }> {
     const payload = { sub: user.id_user, role: user.role };
 
@@ -125,8 +122,7 @@ export class AuthService {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id_user, password, created_at, created_by, updated_at, updated_by, ...sanitizedUser } =
-      user;
+    const { password, created_at, created_by, updated_at, updated_by, ...sanitizedUser } = user;
 
     return {
       access_token,
