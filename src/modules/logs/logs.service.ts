@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { LogAction } from '@prisma/client';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -7,24 +6,61 @@ import { PrismaService } from '@/prisma/prisma.service';
 export class LogsService {
   constructor(private prisma: PrismaService) {}
 
-  async createLog(
-    user_id: string | null,
-    table_name: string,
-    action: LogAction,
-    record_id: string,
-    before_data?: any,
-    after_data?: any
-  ) {
-    return this.prisma.log.create({
-      data: {
-        user_id,
-        table_name,
-        action,
-        record_id,
-        before_data: before_data ? JSON.stringify(before_data) : null,
-        after_data: after_data ? JSON.stringify(after_data) : null,
-        created_at: new Date(),
-      },
-    });
+  /**
+   * 📌 Obtener todos los logs de auditoría
+   */
+  async getAllLogs() {
+    try {
+      const logs = await this.prisma.log.findMany({
+        orderBy: { created_at: 'desc' }, // Ordenar por fecha descendente
+      });
+
+      return {
+        message: 'Lista de logs obtenida exitosamente',
+        data: logs,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al obtener los logs');
+    }
+  }
+
+  /**
+   * 📌 Obtener logs filtrados por usuario
+   * @param user_id ID del usuario
+   */
+  async getLogsByUser(user_id: string) {
+    try {
+      const logs = await this.prisma.log.findMany({
+        where: { user_id },
+        orderBy: { created_at: 'desc' },
+      });
+
+      return {
+        message: 'Lista de logs del usuario obtenida exitosamente',
+        data: logs,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al obtener los logs del usuario');
+    }
+  }
+
+  /**
+   * 📌 Obtener logs filtrados por tabla
+   * @param table_name Nombre de la tabla
+   */
+  async getLogsByTable(table_name: string) {
+    try {
+      const logs = await this.prisma.log.findMany({
+        where: { table_name },
+        orderBy: { created_at: 'desc' },
+      });
+
+      return {
+        message: `Lista de logs para la tabla ${table_name} obtenida exitosamente`,
+        data: logs,
+      };
+    } catch {
+      throw new InternalServerErrorException('Error al obtener los logs de la tabla');
+    }
   }
 }

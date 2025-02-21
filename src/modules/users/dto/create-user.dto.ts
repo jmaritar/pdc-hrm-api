@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 
-import { IsEmail, IsEnum, IsString, Matches, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, IsUUID, Matches, MinLength } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'super@pcd.com', description: 'Correo electrónico único del usuario' })
@@ -26,4 +26,13 @@ export class CreateUserDto {
   @ApiProperty({ example: 'SUPER_ADMIN', enum: UserRole, description: 'Rol del usuario' })
   @IsEnum(UserRole, { message: 'El rol seleccionado no es válido' })
   role: UserRole;
+
+  @ApiProperty({
+    example: 'uuid-company',
+    description: 'ID de la empresa',
+    required: false,
+  })
+  @IsUUID()
+  @IsOptional()
+  company_id?: string;
 }
